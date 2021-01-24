@@ -1,0 +1,47 @@
+logging:
+  level:
+    org.apache.http: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG
+agro:
+  polygon-api-url: http://api.agromonitoring.com/agro/1.0/polygons
+  weather-api-url: http://api.agromonitoring.com/agro/1.0/weather/history
+  api-key: 375ee138bb287ce0586537695c9ff9ca
+  weather-history-duration-in-days: 7
+
+---
+spring:
+  profiles:
+    active: test
+---
+spring:
+  profiles: dev
+  jpa:
+    database: POSTGRESQL
+    hibernate.ddl-auto: create-drop
+    properties.hibernate.temp.use_jdbc_metadata_defaults: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/field_db
+    username: User
+    password: Secret123
+  mvc:
+    throw-exception-if-no-handler-found: true
+environment: dev
+server:
+  port: 8080
+---
+spring:
+  profiles: test
+  h2:
+    console:
+      enabled: true
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:field_test;DB_CLOSE_DELAY=-1
+    initialization-mode: never
+    jpa:
+      show-sql: true
+name: dev-YAML
+server:
+  tomcat:
+    port: 8080
+    max-swallow-size: -1

@@ -1,0 +1,30 @@
+version: '3.7'
+x-environment:
+  &database_credentials
+  POSTGRES_USER: ${FIELD_API_DB_USER:-User}
+  POSTGRES_PASSWORD: ${FIELD_API_PASSWD:-Secret123}
+  POSTGRES_DB: ${FIELD_API_DB_NAME:-field_db}
+
+services:
+  application:
+    build: .
+    image: field_api:latest
+    environment:
+      << : *database_credentials
+      ACTIVE_PROFILE: ${FIELD_API_PROFILE:-dev}
+    ports:
+      - 127.0.0.1:80:8080
+      - 127.0.0.1:8000:8000
+    depends_on:
+      - field_db
+    networks:
+      - field_api_network
+  field_db:
+    image:  postgres:11.6-alpine
+    environment:
+      *database_credentials
+    networks:
+      - field_api_network
+
+networks:
+  field_api_network:
