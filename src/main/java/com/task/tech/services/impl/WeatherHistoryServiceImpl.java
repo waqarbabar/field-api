@@ -68,6 +68,8 @@ public class WeatherHistoryServiceImpl implements WeatherHistoryService {
                 + "&appid=" + key
                 + "&start=" + start
                 + "*end=" + end;*/
+        /* TODO: Replace it with above commented string. Currently using this mock web service
+             to entertain with similar response because actual api account is not setup yet! */
         return "https://extendsclass.com/mock/rest/117281b683fd042121ef237e0744dbca/test";
     }
 

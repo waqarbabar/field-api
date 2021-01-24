@@ -2,17 +2,16 @@ package com.task.tech.controllers;
 
 import com.task.tech.dtos.FieldDTO;
 import com.task.tech.dtos.PaginationDTO;
-import com.task.tech.mappers.FieldMapper;
 import com.task.tech.services.FieldService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.ResponseHeader;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +29,7 @@ import java.util.UUID;
 
 import static com.task.tech.constants.Constants.TAG_API;
 
-
+@Slf4j
 @SwaggerDefinition(
         consumes = {"application/json"},
         produces = {"application/json"},
@@ -53,7 +52,9 @@ public class FieldController {
     @PostMapping("/fields")
     @ResponseStatus(HttpStatus.CREATED)
     public void addNewField(@RequestBody FieldDTO fieldDTO) {
+        log.debug("received request to create new field with body={}", fieldDTO);
         this.fieldService.addNewField(fieldDTO);
+        log.debug("completed request to create new field with id={}", fieldDTO.getId());
     }
 
     @ApiOperation(httpMethod = "PUT", value = "Update existing field with id", nickname = "updateField", notes = "update field", consumes = "application/json")
@@ -65,7 +66,9 @@ public class FieldController {
     @PutMapping("/fields")
     @ResponseStatus(HttpStatus.OK)
     public void updateField(@RequestBody FieldDTO fieldDTO) {
+        log.debug("received request to update existing field with body={}", fieldDTO);
         this.fieldService.updateExistingField(fieldDTO);
+        log.debug("completed request to update existing field with id={}", fieldDTO.getId());
     }
 
     @ApiOperation(httpMethod = "DELETE", value = "Delete an existing field", nickname = "deleteField", notes = "delete field", consumes = "application/json")
@@ -77,7 +80,9 @@ public class FieldController {
     @DeleteMapping("/fields/{fieldId}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteField(@PathVariable UUID fieldId) {
+        log.debug("received request to delete existing field with id={}", fieldId);
         this.fieldService.deleteExistingField(fieldId);
+        log.debug("completed request to delete existing field with id={}", fieldId);
     }
 
     @ApiOperation(httpMethod = "GET", value = "Get field by ID", nickname = "getField", notes = "get Field", consumes = "application/json")
@@ -88,7 +93,10 @@ public class FieldController {
     })
     @GetMapping("/fields/{fieldId}")
     public FieldDTO getField(@PathVariable UUID fieldId) {
-        return this.fieldService.getExistingField(fieldId);
+        log.debug("received request to get existing field with id={}", fieldId);
+        FieldDTO fieldDTO = this.fieldService.getExistingField(fieldId);
+        log.debug("completed request to get existing field with details={}", fieldDTO);
+        return fieldDTO;
     }
 
     @ApiOperation(httpMethod = "GET", value = "Get all fields",
@@ -106,6 +114,9 @@ public class FieldController {
     public List<FieldDTO> getAllFields(
             @ApiParam(type = "query", name = "pageNumber", defaultValue = "0", value = "Page index of total pages. Starts from 0 (Default = 0)") @RequestParam Integer pageNumber,
             @ApiParam(type = "query", name = "pageSize", defaultValue = "10", value = "Page size, starts from 1 (Default = 10") @RequestParam Integer pageSize) {
-        return this.fieldService.getAllExistingFields(new PaginationDTO(pageNumber, pageSize));
+        log.debug("received request to get existing fields  with page number={} and fetch limit is={}", pageNumber, pageSize);
+        List<FieldDTO> fieldDTOs = this.fieldService.getAllExistingFields(new PaginationDTO(pageNumber, pageSize));
+        log.debug("completed request to get existing field with size={}", fieldDTOs.size());
+        return fieldDTOs;
     }
 }
