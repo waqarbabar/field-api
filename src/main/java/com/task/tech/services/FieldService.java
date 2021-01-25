@@ -1,8 +1,7 @@
 package com.task.tech.services;
 
 import com.task.tech.dtos.FieldDTO;
-import com.task.tech.dtos.PaginationDTO;
-import com.task.tech.models.Field;
+import com.task.tech.dtos.PaginationData;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +16,7 @@ public interface FieldService {
 
     FieldDTO getExistingField(UUID fieldId);
 
-    List<FieldDTO> getAllExistingFields(PaginationDTO paginationDTO);
+    List<FieldDTO> getAllExistingFields(PaginationData paginationData);
 
     String getExistingFieldPolygonId(UUID fieldId);
 }

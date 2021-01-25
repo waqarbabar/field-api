@@ -1,18 +1,21 @@
 package com.task.tech.controllers;
 
 import com.task.tech.dtos.FieldDTO;
-import com.task.tech.dtos.PaginationDTO;
+import com.task.tech.dtos.PaginationData;
 import com.task.tech.services.FieldService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,10 +27,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.UUID;
 
 import static com.task.tech.constants.Constants.TAG_API;
+import static com.task.tech.constants.Constants.TOTAL_ENTRIES;
+import static com.task.tech.constants.Constants.TOTAL_PAGES;
 
 @Slf4j
 @SwaggerDefinition(
@@ -104,19 +110,29 @@ public class FieldController {
             notes = "get All Fields",
             consumes = "application/json",
             response = FieldDTO.class,
-            responseContainer = "List")
+            responseContainer = "List",
+            responseHeaders = {
+                    @ResponseHeader(name = TOTAL_ENTRIES, response = Integer.class, description = "Number of total entries"),
+                    @ResponseHeader(name = TOTAL_PAGES, response = Integer.class, description = "Number of total pages")
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful creation"),
             @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 500, message = "Internal Server Error"),
     })
     @GetMapping("/fields")
-    public List<FieldDTO> getAllFields(
-            @ApiParam(type = "query", name = "pageNumber", defaultValue = "0", value = "Page index of total pages. Starts from 0 (Default = 0)") @RequestParam Integer pageNumber,
-            @ApiParam(type = "query", name = "pageSize", defaultValue = "10", value = "Page size, starts from 1 (Default = 10") @RequestParam Integer pageSize) {
+    public ResponseEntity<List<FieldDTO>> getAllFields(
+            @ApiParam(type = "query", name = "pageNumber", defaultValue = "0", value = "Page index of total pages. Starts from 0 (Default = 0)") @RequestParam(required = false) Integer pageNumber,
+            @ApiParam(type = "query", name = "pageSize", defaultValue = "10", value = "Page size, starts from 1 (Default = 10)") @RequestParam(required = false) Integer pageSize,
+            HttpServletResponse response) {
         log.debug("received request to get existing fields  with page number={} and fetch limit is={}", pageNumber, pageSize);
-        List<FieldDTO> fieldDTOs = this.fieldService.getAllExistingFields(new PaginationDTO(pageNumber, pageSize));
+        PaginationData paginationData = new PaginationData(pageNumber, pageSize);
+        List<FieldDTO> fieldDTOs = this.fieldService.getAllExistingFields(paginationData);
         log.debug("completed request to get existing field with size={}", fieldDTOs.size());
-        return fieldDTOs;
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set(TOTAL_ENTRIES, paginationData.getTotalEntries().toString());
+        responseHeaders.set(TOTAL_PAGES, paginationData.getTotalPages().toString());
+        return ResponseEntity.ok().headers(responseHeaders).body(fieldDTOs);
     }
 }

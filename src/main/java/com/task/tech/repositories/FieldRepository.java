@@ -1,14 +1,11 @@
 package com.task.tech.repositories;
 
 import com.task.tech.models.Field;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface FieldRepository extends CrudRepository<Field, Long> {
+public interface FieldRepository extends JpaRepository<Field, Long> {
     Optional<Field> findByFieldUuid(UUID uuid);
-    List<Field> findAll(Pageable pageable);
 }

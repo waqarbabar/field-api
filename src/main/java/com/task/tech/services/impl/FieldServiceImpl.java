@@ -2,7 +2,7 @@ package com.task.tech.services.impl;
 
 import com.task.tech.dtos.FieldDTO;
 import com.task.tech.dtos.GeoJsonDTO;
-import com.task.tech.dtos.PaginationDTO;
+import com.task.tech.dtos.PaginationData;
 import com.task.tech.exceptions.EntityAlreadyException;
 import com.task.tech.exceptions.EntityNotFoundException;
 import com.task.tech.mappers.FieldMapper;
@@ -12,6 +12,7 @@ import com.task.tech.services.FieldService;
 import com.task.tech.services.PolygonService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -77,12 +78,14 @@ public class FieldServiceImpl implements FieldService {
     }
 
     @Override
-    public List<FieldDTO> getAllExistingFields(PaginationDTO paginationDTO) {
-        Pageable pageable = PageRequest.of(paginationDTO.getPageNumber(), paginationDTO.getPageSize());
-        log.debug("getting existing fields with page number={} and size={}", paginationDTO.getPageNumber(), paginationDTO.getPageSize());
-        List<Field> fields = fieldRepository.findAll(pageable);
-        log.debug("found fields with size={}", fields.size());
-        return mapper.mapToDTOs(fields);
+    public List<FieldDTO> getAllExistingFields(PaginationData paginationData) {
+        Pageable pageable = PageRequest.of(paginationData.getPageNumber(), paginationData.getPageSize());
+        log.debug("getting existing fields with page number={} and size={}", paginationData.getPageNumber(), paginationData.getPageSize());
+        Page<Field> fieldPage = fieldRepository.findAll(pageable);
+        paginationData.setTotalEntries(fieldPage.getTotalElements());
+        paginationData.setTotalPages(fieldPage.getTotalPages());
+        log.debug("found fields with total size={}", fieldPage.getTotalElements());
+        return mapper.mapToDTOs(fieldPage.getContent());
     }
 
     @Override
