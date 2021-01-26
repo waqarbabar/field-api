@@ -29,7 +29,7 @@ import static java.util.Objects.isNull;
 @RequiredArgsConstructor
 public class FieldServiceImpl implements FieldService {
 
-    private final FieldMapper mapper;
+    private final FieldMapper fieldMapper;
     private final FieldRepository fieldRepository;
     private final PolygonService polygonService;
 
@@ -74,7 +74,7 @@ public class FieldServiceImpl implements FieldService {
     public FieldDTO getExistingField(UUID fieldId) {
         Field field = getField(fieldId);
         log.debug("existing field found, to show, with id={}", field.getFieldUuid());
-        return mapper.mapToDTO(field);
+        return fieldMapper.mapToDTO(field);
     }
 
     @Override
@@ -85,7 +85,7 @@ public class FieldServiceImpl implements FieldService {
         paginationData.setTotalEntries(fieldPage.getTotalElements());
         paginationData.setTotalPages(fieldPage.getTotalPages());
         log.debug("found fields with total size={}", fieldPage.getTotalElements());
-        return mapper.mapToDTOs(fieldPage.getContent());
+        return fieldMapper.mapToDTOs(fieldPage.getContent());
     }
 
     @Override
@@ -98,7 +98,7 @@ public class FieldServiceImpl implements FieldService {
     }
 
     private Field getFieldToCreate(FieldDTO fieldDTO, String polygonId) {
-        Field field = mapper.mapToModel(fieldDTO);
+        Field field = fieldMapper.mapToModel(fieldDTO);
         field.getBoundaries().setPolygonId(polygonId);
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         if (isNull(field.getCreated())) {
@@ -111,14 +111,16 @@ public class FieldServiceImpl implements FieldService {
     }
 
     private Field getFieldToUpdate(FieldDTO fieldDTO, Field existingField) {
-        Field newField = mapper.mapToModel(fieldDTO);
+        Field newField = fieldMapper.mapToModel(fieldDTO);
         mapOldFieldIdsToNewField(existingField, newField);
-        if (isNull(newField.getCreated()))
+        if (isNull(newField.getCreated())) {
             log.debug("field creation datetime not provided so setting to as its existing state");
             newField.setCreated(existingField.getCreated());
-        if (isNull(newField.getBoundaries().getCreated()))
+        }
+        if (isNull(newField.getBoundaries().getCreated())) {
             log.debug("field boundary creation datetime not provided so setting to as its existing state");
             newField.setCreated(existingField.getCreated());
+        }
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         if (isNull(newField.getUpdated())) {
             log.debug("field updated datetime not provided so setting to current time");

@@ -2,9 +2,11 @@ logging:
   level:
     org.apache.http: DEBUG
     org.springframework.web.client.RestTemplate: DEBUG
+    com.task.tech: DEBUG
+
 agro:
   polygon-api-url: http://api.agromonitoring.com/agro/1.0/polygons
-  weather-api-url: http://api.agromonitoring.com/agro/1.0/weather/history
+  weather-api-url: https://samples.openweathermap.org/agro/1.0/weather/history
   api-key: 375ee138bb287ce0586537695c9ff9ca
   weather-history-duration-in-days: 7
 
@@ -44,4 +46,3 @@ name: dev-YAML
 server:
   tomcat:
     port: 8080
-    max-swallow-size: -1

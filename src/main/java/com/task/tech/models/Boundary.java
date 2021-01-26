@@ -1,6 +1,5 @@
 package com.task.tech.models;
 
-import com.task.tech.dtos.GeoJsonDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +14,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,15 +25,23 @@ public class Boundary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private UUID boundaryUuid;
+
     private String polygonId;
+
     private ZonedDateTime created;
+
     private ZonedDateTime updated;
-    String geoJsonType;
+
+    private String geoJsonType;
+
     @Transient
-    private Property properties = new Property();
+    private Property properties;
+
     private String geometryType;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "boundary_id_fk")
-    private List<Coordinate> coordinates = new ArrayList<>();
+    private List<Coordinate> coordinates;
 }

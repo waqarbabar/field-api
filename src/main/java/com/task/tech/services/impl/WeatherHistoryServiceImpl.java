@@ -63,14 +63,11 @@ public class WeatherHistoryServiceImpl implements WeatherHistoryService {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         long start = now.minusDays(durationInDays).toEpochSecond();
         long end = now.toEpochSecond();
-        /*return weatherHistoryUrl
+        return weatherHistoryUrl
                 + "?polyid=" + polygonId
                 + "&appid=" + key
                 + "&start=" + start
-                + "*end=" + end;*/
-        /* TODO: Replace it with above commented string. Currently using this mock web service
-             to entertain with similar response because actual api account is not setup yet! */
-        return "https://extendsclass.com/mock/rest/117281b683fd042121ef237e0744dbca/test";
+                + "*end=" + end;
     }
 
     private WeatherHistoryDTO getWeatherHistoryDTO(UUID fieldId, ResponseEntity<WeatherDTO[]> response) {
