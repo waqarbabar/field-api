@@ -35,13 +35,13 @@ public class FieldServiceImpl implements FieldService {
 
     @Override
     public void addNewField(FieldDTO fieldDTO) {
+        fieldRepository.findByFieldUuid(fieldDTO.getId()).ifPresent(f -> {
+            throw new EntityAlreadyException("Field Already Exists with id: " + f.getFieldUuid());
+        });
         log.debug("creating new polygon for field id={}", fieldDTO.getId());
         String polygonId = createPolygon(fieldDTO);
         log.debug("new polygon with id={} created for field id={}", polygonId, fieldDTO.getId());
         Field field = getFieldToCreate(fieldDTO, polygonId);
-        fieldRepository.findByFieldUuid(field.getFieldUuid()).ifPresent(f -> {
-            throw new EntityAlreadyException("Field Already Exists with id: " + f.getFieldUuid());
-        });
         log.debug("saving new field with field id={}", field.getFieldUuid());
         fieldRepository.save(field);
     }
@@ -119,7 +119,7 @@ public class FieldServiceImpl implements FieldService {
         }
         if (isNull(newField.getBoundaries().getCreated())) {
             log.debug("field boundary creation datetime not provided so setting to as its existing state");
-            newField.setCreated(existingField.getCreated());
+            newField.getBoundaries().setCreated(existingField.getCreated());
         }
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
         if (isNull(newField.getUpdated())) {

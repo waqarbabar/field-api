@@ -1,11 +1,15 @@
 package com.task.tech.dtos;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@ToString
 public class BoundaryDTO {
     private UUID id;
     private ZonedDateTime created;

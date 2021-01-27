@@ -1,12 +1,16 @@
 package com.task.tech.dtos;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
+@ToString
 public class FieldDTO {
     @NotNull(message = "id can not be null")
     private UUID id;

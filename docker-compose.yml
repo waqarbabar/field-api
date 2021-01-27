@@ -10,7 +10,7 @@ services:
     build: .
     image: field_api:latest
     environment:
-      << : *database_credentials
+      <<: *database_credentials
       ACTIVE_PROFILE: ${FIELD_API_PROFILE:-dev}
     ports:
       - 127.0.0.1:80:8080
@@ -20,7 +20,7 @@ services:
     networks:
       - field_api_network
   field_db:
-    image:  postgres:11.6-alpine
+    image: postgres:11.6-alpine
     environment:
       *database_credentials
     networks:

@@ -24,13 +24,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.Arrays;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -57,7 +59,7 @@ class FieldServiceImplTest {
     }
 
     @Test
-    void test_addNewField_whenAlreadyNotExists_newFieldSaved() {
+    void test_addNewField_whenAlreadyNotExists_newFieldSavedWithDefaults() {
         // given
         UUID fieldUuid = UUID.randomUUID();
         given(polygonService.createNewPolygon(any(GeoJsonDTO.class))).willReturn("test_polygon");
@@ -70,7 +72,34 @@ class FieldServiceImplTest {
         // then
         verify(fieldRepository, times(1)).findByFieldUuid(fieldUuid);
         verify(fieldRepository, times(1)).save(fieldCaptor.capture());
-        assertEquals(fieldUuid, fieldCaptor.getValue().getFieldUuid());
+        Field field = fieldCaptor.getValue();
+        assertEquals(fieldUuid, field.getFieldUuid());
+        assertNotNull(field.getCreated());
+        assertNotNull(field.getBoundaries().getCreated());
+    }
+
+    @Test
+    void test_addNewField_whenAlreadyNotExists_newFieldSavedWithAsProvided() {
+        // given
+        UUID fieldUuid = UUID.randomUUID();
+        Field fieldToBeSaved = getField(fieldUuid);
+        ZonedDateTime now = ZonedDateTime.now();
+        fieldToBeSaved.setCreated(now);
+        fieldToBeSaved.getBoundaries().setCreated(now);
+        given(polygonService.createNewPolygon(any(GeoJsonDTO.class))).willReturn("test_polygon");
+        given(fieldMapper.mapToModel(any(FieldDTO.class))).willReturn(fieldToBeSaved);
+        given(fieldRepository.findByFieldUuid(any(UUID.class))).willReturn(Optional.empty());
+
+        // when
+        serviceUnderTest.addNewField(getFieldDTO(fieldUuid));
+
+        // then
+        verify(fieldRepository, times(1)).findByFieldUuid(fieldUuid);
+        verify(fieldRepository, times(1)).save(fieldCaptor.capture());
+        Field field = fieldCaptor.getValue();
+        assertEquals(fieldUuid, field.getFieldUuid());
+        assertEquals(now, field.getCreated());
+        assertEquals(now, field.getBoundaries().getCreated());
     }
 
     @Test
@@ -90,10 +119,43 @@ class FieldServiceImplTest {
     }
 
     @Test
-    void test_updateExistingField_whenAlreadyExists_FieldUpdated() {
+    void test_updateExistingField_whenAlreadyExists_FieldUpdatedWithDefault() {
         // given
         UUID fieldUuid = UUID.randomUUID();
+        Field fieldToBeSaved = getField(fieldUuid);
+        ZonedDateTime now = ZonedDateTime.now();
+        fieldToBeSaved.setCreated(now);
+        fieldToBeSaved.getBoundaries().setCreated(now);
         given(fieldMapper.mapToModel(any(FieldDTO.class))).willReturn(getField(fieldUuid));
+        given(fieldRepository.findByFieldUuid(any(UUID.class))).willReturn(Optional.of(fieldToBeSaved));
+
+        // when
+        serviceUnderTest.updateExistingField(getFieldDTO(fieldUuid));
+
+        // then
+        verify(fieldRepository, times(1)).findByFieldUuid(fieldUuid);
+        verify(fieldRepository, times(1)).save(fieldCaptor.capture());
+        Field field = fieldCaptor.getValue();
+        assertEquals(fieldUuid, field.getFieldUuid());
+        assertEquals(now, field.getCreated());
+        assertEquals(now, field.getBoundaries().getCreated());
+        assertNotNull(field.getUpdated());
+        assertNotNull(field.getBoundaries().getUpdated());
+        assertNotEquals(now, field.getUpdated());
+        assertNotEquals(now, field.getBoundaries().getUpdated());
+    }
+
+    @Test
+    void test_updateExistingField_whenAlreadyExists_FieldUpdatedWithProvided() {
+        // given
+        UUID fieldUuid = UUID.randomUUID();
+        Field fieldToBeSaved = getField(fieldUuid);
+        ZonedDateTime now = ZonedDateTime.now();
+        fieldToBeSaved.setCreated(now);
+        fieldToBeSaved.getBoundaries().setCreated(now);
+        fieldToBeSaved.setUpdated(now);
+        fieldToBeSaved.getBoundaries().setUpdated(now);
+        given(fieldMapper.mapToModel(any(FieldDTO.class))).willReturn(fieldToBeSaved);
         given(fieldRepository.findByFieldUuid(any(UUID.class))).willReturn(Optional.of(getField(fieldUuid)));
 
         // when
@@ -103,6 +165,12 @@ class FieldServiceImplTest {
         verify(fieldRepository, times(1)).findByFieldUuid(fieldUuid);
         verify(fieldRepository, times(1)).save(fieldCaptor.capture());
         assertEquals(fieldUuid, fieldCaptor.getValue().getFieldUuid());
+        Field field = fieldCaptor.getValue();
+        assertEquals(fieldUuid, field.getFieldUuid());
+        assertEquals(now, field.getCreated());
+        assertEquals(now, field.getBoundaries().getCreated());
+        assertEquals(now, field.getUpdated());
+        assertEquals(now, field.getBoundaries().getUpdated());
     }
 
     @Test
@@ -208,6 +276,32 @@ class FieldServiceImplTest {
         verify(fieldMapper, times(1)).mapToDTOs(any(List.class));
         assertEquals(page.getTotalElements(), paginationData.getTotalEntries());
         assertEquals(page.getTotalPages(), paginationData.getTotalPages());
+    }
+
+    @Test
+    void test_getExistingFieldPolygonId_whenAlreadyExists_ReturnsId() {
+        // given
+        UUID fieldUuid = UUID.randomUUID();
+        given(fieldRepository.findByFieldUuid(any(UUID.class))).willReturn(Optional.of(getField(fieldUuid)));
+
+        // when
+        serviceUnderTest.getExistingFieldPolygonId(fieldUuid);
+
+        // then
+        verify(fieldRepository, times(1)).findByFieldUuid(fieldUuid);
+    }
+
+    @Test
+    void test_getExistingFieldPolygonId_whenNotExists_throwsException() {
+        // given
+        UUID fieldUuid = UUID.randomUUID();
+        given(fieldRepository.findByFieldUuid(fieldUuid)).willReturn(Optional.empty());
+
+        // when
+        assertThrows(EntityNotFoundException.class, () -> serviceUnderTest.getExistingFieldPolygonId(fieldUuid));
+
+        // then
+        verify(fieldRepository, times(1)).findByFieldUuid(fieldUuid);
     }
 
     private FieldDTO getFieldDTO(UUID id) {
